@@ -10,6 +10,7 @@ import {
   resolveInboundDebounceMs,
 } from "../../auto-reply/inbound-debounce.js";
 import { danger } from "../../globals.js";
+import { createInternalHookEvent, triggerInternalHook } from "../../hooks/internal-hooks.js";
 import { preflightDiscordMessage } from "./message-handler.preflight.js";
 import { processDiscordMessage } from "./message-handler.process.js";
 import { resolveDiscordMessageText } from "./message-utils.js";
@@ -74,6 +75,33 @@ export function createDiscordMessageHandler(params: {
       if (!last) {
         return;
       }
+      // Context collection hook — preflight通過後にのみ発火（チャネルポリシーを遵守）
+      const fireContextHook = () => {
+        const hookEntry = entries.at(-1)!;
+        const rawMsg = hookEntry.data.message;
+        const rawAuthor = hookEntry.data.author;
+        if (rawMsg && rawAuthor) {
+          const hookText = entries
+            .map((e) => resolveDiscordMessageText(e.data.message, { includeForwarded: false }))
+            .filter(Boolean)
+            .join("\n");
+          if (hookText.trim()) {
+            void triggerInternalHook(
+              createInternalHookEvent("channel", "message:inbound", `discord:${params.accountId}`, {
+                channel: "discord",
+                accountId: params.accountId,
+                channelId: rawMsg.channelId,
+                guildId: hookEntry.data.guild_id,
+                senderId: rawAuthor.id,
+                senderName: rawAuthor.username ?? rawAuthor.global_name ?? rawAuthor.id,
+                messageId: rawMsg.id,
+                text: hookText,
+                timestamp: Date.now(),
+              }),
+            );
+          }
+        }
+      };
       if (entries.length === 1) {
         const ctx = await preflightDiscordMessage({
           ...params,
@@ -85,6 +113,7 @@ export function createDiscordMessageHandler(params: {
         if (!ctx) {
           return;
         }
+        fireContextHook();
         await processDiscordMessage(ctx);
         return;
       }
@@ -129,6 +158,7 @@ export function createDiscordMessageHandler(params: {
           ctxBatch.MessageSidLast = ids[ids.length - 1];
         }
       }
+      fireContextHook();
       await processDiscordMessage(ctx);
     },
     onError: (err) => {

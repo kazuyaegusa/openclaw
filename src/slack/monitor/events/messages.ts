@@ -8,6 +8,7 @@ import type {
   SlackThreadBroadcastEvent,
 } from "../types.js";
 import { danger } from "../../../globals.js";
+import { createInternalHookEvent, triggerInternalHook } from "../../../hooks/internal-hooks.js";
 import { enqueueSystemEvent } from "../../../infra/system-events.js";
 import { resolveSlackChannelLabel } from "../channel-config.js";
 
@@ -111,6 +112,36 @@ export function registerSlackMessageEvents(params: {
         return;
       }
 
+      // Passive context collection hook（チャネルポリシーを遵守してからのみ発火）
+      const hookChannelId = message.channel;
+      if (hookChannelId) {
+        const hookChannelInfo = await ctx.resolveChannelName(hookChannelId);
+        if (
+          ctx.isChannelAllowed({
+            channelId: hookChannelId,
+            channelName: hookChannelInfo?.name,
+            channelType: hookChannelInfo?.type,
+          })
+        ) {
+          const rawText = message.text ?? "";
+          const rawSender = message.user ?? message.bot_id;
+          if (rawText.trim() && rawSender) {
+            void triggerInternalHook(
+              createInternalHookEvent("channel", "message:inbound", `slack:${ctx.accountId}`, {
+                channel: "slack",
+                accountId: ctx.accountId,
+                channelId: hookChannelId,
+                senderId: rawSender,
+                senderName: rawSender,
+                messageId: message.ts,
+                text: rawText,
+                timestamp: message.ts ? Math.round(Number(message.ts) * 1000) : Date.now(),
+                threadTs: message.thread_ts,
+              }),
+            );
+          }
+        }
+      }
       await handleSlackMessage(message, { source: "message" });
     } catch (err) {
       ctx.runtime.error?.(danger(`slack handler failed: ${String(err)}`));
