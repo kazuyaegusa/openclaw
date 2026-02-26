@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTG議事録 → Mission Control 自動パイプライン ガイド</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242836;
+    --border: #2e3345;
+    --text: #e4e7f0;
+    --text-dim: #8b90a5;
+    --accent: #6c8cff;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --orange: #fb923c;
+    --red: #f87171;
+    --yellow: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e2235 0%, #1a1d27 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 32px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header p { color: var(--text-dim); font-size: 1.1rem; }
+
+  /* Navigation */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    backdrop-filter: blur(8px);
+  }
+  .nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Main content */
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 32px; }
+
+  /* Section */
+  section { margin-bottom: 56px; }
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .num {
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin: 24px 0 12px;
+    color: var(--accent2);
+  }
+  p { margin-bottom: 12px; color: var(--text); }
+  .dim { color: var(--text-dim); }
+
+  /* Flow diagram */
+  .flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 24px 0;
+  }
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 16px 0;
+  }
+  .flow-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .flow-icon.blue { background: rgba(108, 140, 255, 0.15); border: 1px solid rgba(108, 140, 255, 0.3); }
+  .flow-icon.purple { background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.3); }
+  .flow-icon.green { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); }
+  .flow-icon.orange { background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3); }
+  .flow-content h4 { font-size: 0.95rem; margin-bottom: 4px; }
+  .flow-content p { font-size: 0.85rem; color: var(--text-dim); margin: 0; }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 22px;
+    color: var(--text-dim);
+    font-size: 1.2rem;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media (max-width: 640px) { .card-grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .card h4 {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card p { font-size: 0.85rem; color: var(--text-dim); margin: 0; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .tag.new { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .tag.mod { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+  .tag.py { background: rgba(108, 140, 255, 0.15); color: var(--accent); }
+  .tag.ts { background: rgba(167, 139, 250, 0.15); color: var(--accent2); }
+
+  /* Code blocks */
+  pre {
+    background: #12141c;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+  }
+  .inline-code {
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+  }
+
+  /* Setup checklist */
+  .checklist {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .check-detail { flex: 1; }
+  .check-detail strong { display: block; margin-bottom: 4px; }
+  .check-detail p { font-size: 0.85rem; color: var(--text-dim); margin: 0; }
+
+  /* Alert */
+  .alert {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .alert.info { background: rgba(108, 140, 255, 0.08); border: 1px solid rgba(108, 140, 255, 0.2); }
+  .alert.warn { background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.2); }
+  .alert.success { background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); }
+  .alert-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 16px 0;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text-dim); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Diagram (ASCII-style with CSS) */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 140px;
+  }
+  .arch-box.blue-bg { background: rgba(108, 140, 255, 0.15); border: 1px solid rgba(108, 140, 255, 0.3); color: var(--accent); }
+  .arch-box.purple-bg { background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.3); color: var(--accent2); }
+  .arch-box.green-bg { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: var(--green); }
+  .arch-box.orange-bg { background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3); color: var(--orange); }
+  .arch-arrow { color: var(--text-dim); font-size: 1.5rem; }
+  .arch-arrow-down { text-align: center; color: var(--text-dim); font-size: 1.2rem; padding: 4px 0; }
+  .arch-label { font-size: 0.7rem; color: var(--text-dim); text-align: center; }
+
+  /* Safety badge */
+  .safety-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+  @media (max-width: 640px) { .safety-grid { grid-template-columns: 1fr; } }
+  .safety-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .safety-item .icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .safety-item strong { display: block; font-size: 0.85rem; margin-bottom: 4px; }
+  .safety-item p { font-size: 0.75rem; color: var(--text-dim); margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>MTG議事録 → Mission Control 自動パイプライン</h1>
+  <p>会議の議事録から自動でタスクを生成し、AIが実行する仕組み</p>
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <a href="#what">これは何？</a>
+  <a href="#architecture">全体の仕組み</a>
+  <a href="#flow">データの流れ</a>
+  <a href="#components">登場するもの</a>
+  <a href="#files">変更ファイル</a>
+  <a href="#safety">安全設計</a>
+  <a href="#setup">セットアップ手順</a>
+  <a href="#verify">動作確認</a>
+</nav>
+
+<div class="container">
+
+<!-- Section 1: What is this? -->
+<section id="what">
+  <h2><span class="num">1</span> これは何？</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>Before（今まで）</h4>
+      <p>毎朝9時に CircleBack から議事録が自動保存される。でも「誰が何をやるか」は手動で読んで手動でタスク化していた。</p>
+    </div>
+    <div class="card">
+      <h4>After（これから）</h4>
+      <p>議事録が保存された瞬間に AI が自動で読んで、TODO/宿題/決定事項を抽出し、タスクとして Mission Control に登録。AI が自動実行してくれる。</p>
+    </div>
+  </div>
+
+  <div class="alert info">
+    <span class="alert-icon">💡</span>
+    <div>
+      <strong>一言でいうと：</strong>
+      会議の議事録ファイルが保存されたら、自動的にタスクが作られて AI が実行してくれるパイプラインです。
+      ただし、AI が作ったタスクはすべて「レビュー待ち」状態になるので、最終的にはあなたが確認・承認します。
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: Architecture -->
+<section id="architecture">
+  <h2><span class="num">2</span> 全体の仕組み</h2>
+
+  <p>このパイプラインは、大きく分けて <strong>3つのシステム</strong> が連携して動きます。</p>
+
+  <div class="arch-diagram">
+    <!-- Row 1: CircleBack -->
+    <div class="arch-row">
+      <div class="arch-box blue-bg">
+        CircleBack<br><span style="font-size:0.7rem;font-weight:400">会議記録サービス（外部）</span>
+      </div>
+    </div>
+    <div class="arch-arrow-down">↓ API で議事録を取得</div>
+
+    <!-- Row 2: Scheduler -->
+    <div class="arch-row">
+      <div class="arch-box orange-bg">
+        CircleBack スケジューラー<br><span style="font-size:0.7rem;font-weight:400">Python / Mac 上で毎朝9時に実行</span>
+      </div>
+    </div>
+    <div class="arch-arrow-down">↓ 新しいファイルを Markdown 保存 + webhook で送信</div>
+
+    <!-- Row 3: Two destinations -->
+    <div class="arch-row">
+      <div class="arch-box green-bg">
+        議事録フォルダ<br><span style="font-size:0.7rem;font-weight:400">~/KEWORK/shared/<br>mtg_transcripts/</span>
+      </div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box purple-bg">
+        Mission Control<br><span style="font-size:0.7rem;font-weight:400">Convex クラウド上の<br>タスク管理AI</span>
+      </div>
+    </div>
+    <div class="arch-arrow-down" style="margin-left: 200px;">↓ AI が議事録を分析してタスク生成</div>
+
+    <!-- Row 4: Result -->
+    <div class="arch-row">
+      <div style="width: 140px;"></div>
+      <div class="arch-box purple-bg">
+        タスク一覧（レビュー待ち）<br><span style="font-size:0.7rem;font-weight:400">あなたが承認 → 実行完了</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>3つのシステムの役割</h3>
+  <table>
+    <tr>
+      <th>システム</th>
+      <th>どこで動く？</th>
+      <th>何をする？</th>
+    </tr>
+    <tr>
+      <td><strong>CircleBack</strong></td>
+      <td>外部サービス（Web）</td>
+      <td>会議を自動録音・議事録化する。元データはここにある</td>
+    </tr>
+    <tr>
+      <td><strong>CircleBack スケジューラー</strong></td>
+      <td>あなたの Mac（Python）</td>
+      <td>毎朝9時に CircleBack から新しい議事録を取得し、Markdownファイルとして保存。<strong>今回の変更で、保存と同時に Mission Control にも送信</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Mission Control</strong></td>
+      <td>クラウド（Convex）</td>
+      <td>受け取った議事録を Claude AI が分析し、TODO/宿題をタスク化して自動実行</td>
+    </tr>
+  </table>
+</section>
+
+<!-- Section 3: Data Flow -->
+<section id="flow">
+  <h2><span class="num">3</span> データの流れ（ステップバイステップ）</h2>
+
+  <div class="flow">
+    <div class="flow-steps">
+
+      <div class="flow-step">
+        <div class="flow-icon blue">1</div>
+        <div class="flow-content">
+          <h4>毎朝9:00 — スケジューラーが起動</h4>
+          <p>Mac 上の Python スクリプトが毎朝9時に自動実行。CircleBack API から新しい議事録を取得</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-step">
+        <div class="flow-icon blue">2</div>
+        <div class="flow-content">
+          <h4>Markdown ファイル保存</h4>
+          <p>取得した議事録を <code class="inline-code">~/KEWORK/shared/mtg_transcripts/{ID}_{タイトル}.md</code> に保存。<br>
+          ここまでは従来と同じ動作</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓ <span style="font-size:0.75rem;color:var(--green);margin-left:8px;">ここから新機能</span></div>
+
+      <div class="flow-step">
+        <div class="flow-icon green">3</div>
+        <div class="flow-content">
+          <h4>ブリッジが Mission Control に送信</h4>
+          <p>新しく保存されたファイルだけを webhook（HTTP POST）で Mission Control に送信。<br>
+          <strong>Summary 部分のみ送信</strong>（Full Transcript は送らない → API料金節約）。<br>
+          Meeting ID を付けるので、同じ議事録を2回送っても重複しない</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-step">
+        <div class="flow-icon purple">4</div>
+        <div class="flow-content">
+          <h4>Mission Control が受信・重複チェック</h4>
+          <p>Convex（クラウド）の webhook エンドポイントが受信。<br>
+          Meeting ID で「この議事録はもう処理済み？」をチェック → 重複なら無視</p>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-step">
+        <div class="flow-icon purple">5</div>
+        <div class="flow-content">
+          <h4>AI が議事録を分析（コンテキストプロセッサー）</h4>
+          <p>Claude AI が議事録を読み、<strong>議事録専用のプロンプト</strong>で分析。<br>
+          さらに以下の情報も参照して、より賢く判断：</p>
+          <ul style="font-size:0.85rem;color:var(--text-dim);margin:8px 0 0 20px;">
+            <li>過去の関連MTG（同じキーワードを含む過去5件の要約）</li>
+            <li>現在進行中のタスク一覧（重複タスクを作らないため）</li>
+            <li>参加者情報</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-step">
+        <div class="flow-icon orange">6</div>
+        <div class="flow-content">
+          <h4>タスク自動生成 + AI 実行</h4>
+          <p>分析結果からタスクが自動生成される。各タスクは AI が自動実行し、結果が付く。<br>
+          抽出されるもの：</p>
+          <ul style="font-size:0.85rem;color:var(--text-dim);margin:8px 0 0 20px;">
+            <li><strong>決定事項</strong>（会議で合意されたこと）</li>
+            <li><strong>TODO/宿題</strong>（誰かがやると言った作業）</li>
+            <li><strong>担当者ヒント</strong>（誰がやりそうか）</li>
+            <li><strong>期限ヒント</strong>（いつまでか）</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-step">
+        <div class="flow-icon green">7</div>
+        <div class="flow-content">
+          <h4>レビュー待ち → あなたが承認</h4>
+          <p>全タスクは <strong>「レビュー待ち（awaiting_review）」</strong> 状態で止まる。<br>
+          Mission Control のダッシュボードであなたが確認して、承認 or 却下</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Section 4: Components -->
+<section id="components">
+  <h2><span class="num">4</span> 登場するもの（用語説明）</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>CircleBack</h4>
+      <p>会議を自動録音して議事録を作ってくれる外部サービス。API でデータを取得できる。デスクトップアプリの Cookie を使って認証</p>
+    </div>
+    <div class="card">
+      <h4>スケジューラー（Python）</h4>
+      <p>あなたの Mac で毎朝動く Python スクリプト。APScheduler というライブラリで定時実行。CircleBack から新しい議事録を取得して保存する</p>
+    </div>
+    <div class="card">
+      <h4>ブリッジ（Python）</h4>
+      <p><strong>今回新しく作ったもの</strong>。スケジューラーが保存したファイルを Mission Control の webhook に HTTP POST で送信する橋渡し役</p>
+    </div>
+    <div class="card">
+      <h4>Mission Control（Convex）</h4>
+      <p>クラウド上のタスク管理 AI システム。Convex というバックエンドサービスで動いている。webhook でデータを受け取り、AI で分析・タスク生成する</p>
+    </div>
+    <div class="card">
+      <h4>Webhook</h4>
+      <p>「あるイベントが起きたら、指定した URL にデータを送る」仕組み。ここでは「議事録が保存されたら、Mission Control の URL にデータを POST する」</p>
+    </div>
+    <div class="card">
+      <h4>externalId（重複防止キー）</h4>
+      <p>各議事録の Meeting ID のこと。同じ議事録を2回送っても、この ID で「もう処理済み」と判断して無視する。安全装置</p>
+    </div>
+  </div>
+</section>
+
+<!-- Section 5: Changed Files -->
+<section id="files">
+  <h2><span class="num">5</span> 変更したファイル一覧</h2>
+
+  <h3>Python 側（CircleBack スケジューラー）</h3>
+  <p class="dim">場所: <code class="inline-code">~/KEWORK/7025_circle_back_all/02_claude/</code></p>
+  <table>
+    <tr>
+      <th>ファイル</th>
+      <th>種別</th>
+      <th>何をした？</th>
+    </tr>
+    <tr>
+      <td><code class="inline-code">src/mission_control_bridge.py</code></td>
+      <td><span class="tag new">新規</span> <span class="tag py">Python</span></td>
+      <td>ブリッジ本体。ファイルを読んで Summary だけ抽出し、webhook に POST する</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">src/circleback_api.py</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag py">Python</span></td>
+      <td>sync() の戻り値に「保存したファイルのパス一覧」を追加</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">src/scheduler/runner.py</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag py">Python</span></td>
+      <td>sync() から受け取ったパス一覧を RunResult に格納</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">src/scheduler/scheduler.py</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag py">Python</span></td>
+      <td>起動時にブリッジを初期化、ジョブ実行後にブリッジで送信</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">src/scheduler/config.py</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag py">Python</span></td>
+      <td>MissionControlSettings 設定クラスを追加</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">config/scheduler_config.yaml</code></td>
+      <td><span class="tag mod">変更</span></td>
+      <td>mission_control セクションを追加</td>
+    </tr>
+  </table>
+
+  <h3>Convex 側（Mission Control）</h3>
+  <p class="dim">場所: <code class="inline-code">~/KEWORK/OpenClaw/mission-control/convex/</code></p>
+  <table>
+    <tr>
+      <th>ファイル</th>
+      <th>種別</th>
+      <th>何をした？</th>
+    </tr>
+    <tr>
+      <td><code class="inline-code">convex/http.ts</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag ts">TypeScript</span></td>
+      <td>webhook に externalId 重複チェックを追加</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">convex/contexts.ts</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag ts">TypeScript</span></td>
+      <td>findByExternalId、searchBySourceAndKeywords クエリを追加</td>
+    </tr>
+    <tr>
+      <td><code class="inline-code">convex/contextProcessor.ts</code></td>
+      <td><span class="tag mod">変更</span> <span class="tag ts">TypeScript</span></td>
+      <td>議事録専用プロンプト追加、過去MTG参照、既存タスク重複防止のエンリッチメント</td>
+    </tr>
+  </table>
+</section>
+
+<!-- Section 6: Safety -->
+<section id="safety">
+  <h2><span class="num">6</span> 安全設計</h2>
+
+  <p>勝手にヤバいことが起きないように、3つの安全装置を入れています。</p>
+
+  <div class="safety-grid">
+    <div class="safety-item">
+      <div class="icon">🛡️</div>
+      <strong>重複防止</strong>
+      <p>Meeting ID（externalId）で同じ議事録を2回処理しない。何度送っても大丈夫</p>
+    </div>
+    <div class="safety-item">
+      <div class="icon">👀</div>
+      <strong>レビュー必須</strong>
+      <p>AI が生成したタスクは全て「レビュー待ち」で止まる。あなたが承認しないと完了にならない</p>
+    </div>
+    <div class="safety-item">
+      <div class="icon">🔒</div>
+      <strong>エラー隔離</strong>
+      <p>ブリッジがエラーでも、従来の議事録保存は止まらない。Mission Control が落ちても議事録は安全</p>
+    </div>
+  </div>
+
+  <div class="alert info">
+    <span class="alert-icon">ℹ️</span>
+    <div>
+      <strong>既存フローは一切壊れません。</strong>
+      ブリッジが無効（環境変数未設定）の場合、従来通り「議事録を取得して保存する」だけの動作になります。
+    </div>
+  </div>
+</section>
+
+<!-- Section 7: Setup -->
+<section id="setup">
+  <h2><span class="num">7</span> あなたがやること（セットアップ手順）</h2>
+
+  <div class="alert warn">
+    <span class="alert-icon">⚡</span>
+    <div>
+      <strong>以下の2ステップだけで動きます。</strong>
+      コードの変更は全て完了しているので、あなたが設定するのは環境変数だけです。
+    </div>
+  </div>
+
+  <div class="checklist">
+
+    <div class="check-item">
+      <div class="check-num">1</div>
+      <div class="check-detail">
+        <strong>CircleBack スケジューラーに環境変数を設定</strong>
+        <p>スケジューラーを起動する環境（ターミナル or launchd）で以下の環境変数を設定してください。</p>
+        <pre><code># Mission Control の webhook URL（Convex のエンドポイント）
+export MISSION_CONTROL_WEBHOOK_URL="https://rugged-rabbit-145.convex.site/webhook/context"
+
+# 認証トークン（Convex 側の CONTEXT_WEBHOOK_TOKEN と同じ値）
+export MISSION_CONTROL_WEBHOOK_TOKEN="mc-bridge-41768d6ba9b8fc7cbec020b3eacac5ec"</code></pre>
+        <p style="margin-top:8px;">
+          <strong>設定方法：</strong>スケジューラーの起動スクリプトや <code class="inline-code">.env</code> ファイル、
+          または launchd の plist ファイルに追記してください。
+        </p>
+      </div>
+    </div>
+
+    <div class="check-item">
+      <div class="check-num">2</div>
+      <div class="check-detail">
+        <strong>Convex にコード変更をデプロイ</strong>
+        <p>Mission Control のディレクトリで Convex のデプロイコマンドを実行してください。</p>
+        <pre><code>cd ~/KEWORK/OpenClaw/mission-control
+npx convex deploy</code></pre>
+        <p style="margin-top:8px;">
+          これにより、contexts.ts / http.ts / contextProcessor.ts の変更がクラウドに反映されます。
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="alert success">
+    <span class="alert-icon">✅</span>
+    <div>
+      <strong>これだけで完了です。</strong>
+      次の朝9時のスケジューラー実行から、新しい議事録が自動的に Mission Control に投入されます。
+    </div>
+  </div>
+</section>
+
+<!-- Section 8: Verification -->
+<section id="verify">
+  <h2><span class="num">8</span> 動作確認のやり方</h2>
+
+  <p>セットアップ後、以下の手順で正しく動いているか確認できます。</p>
+
+  <div class="checklist">
+
+    <div class="check-item">
+      <div class="check-num">1</div>
+      <div class="check-detail">
+        <strong>スケジューラーを手動実行（--run-now）</strong>
+        <pre><code>cd ~/KEWORK/7025_circle_back_all/02_claude
+python3 src/run_scheduler.py --run-now</code></pre>
+        <p>新しい議事録があれば取得・保存・送信が実行されます。<br>ログに <code class="inline-code">Mission Control投入成功</code> と表示されれば OK</p>
+      </div>
+    </div>
+
+    <div class="check-item">
+      <div class="check-num">2</div>
+      <div class="check-detail">
+        <strong>Convex ダッシュボードで確認</strong>
+        <p>
+          <a href="https://dashboard.convex.dev" style="color:var(--accent);">Convex Dashboard</a> →
+          <code class="inline-code">contexts</code> テーブルを開き、<code class="inline-code">source: "circleback"</code> のレコードが作成されていること。
+          status が <code class="inline-code">pending → processing → routed</code> と進めば正常。
+        </p>
+      </div>
+    </div>
+
+    <div class="check-item">
+      <div class="check-num">3</div>
+      <div class="check-detail">
+        <strong>タスクが生成されているか確認</strong>
+        <p>
+          <code class="inline-code">tasks</code> テーブルに新しいタスクが作成され、
+          status が <code class="inline-code">awaiting_review</code> になっていれば成功。
+          Mission Control のダッシュボード UI でも確認できます。
+        </p>
+      </div>
+    </div>
+
+    <div class="check-item">
+      <div class="check-num">4</div>
+      <div class="check-detail">
+        <strong>重複防止テスト</strong>
+        <p>同じスケジューラーをもう一度 <code class="inline-code">--run-now</code> で実行。
+        ログに <code class="inline-code">重複スキップ</code> と出れば、重複防止が正しく動作しています。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <h3>トラブルシューティング</h3>
+  <table>
+    <tr>
+      <th>症状</th>
+      <th>原因と対処</th>
+    </tr>
+    <tr>
+      <td>「Mission Control連携エラー」とログに出る</td>
+      <td>環境変数 <code class="inline-code">MISSION_CONTROL_WEBHOOK_URL</code> と <code class="inline-code">MISSION_CONTROL_WEBHOOK_TOKEN</code> が正しいか確認。Convex がデプロイ済みか確認</td>
+    </tr>
+    <tr>
+      <td>contexts テーブルにレコードがない</td>
+      <td>Convex のデプロイが反映されていない可能性。<code class="inline-code">npx convex deploy</code> を再実行</td>
+    </tr>
+    <tr>
+      <td>contexts は作られるがタスクが生成されない</td>
+      <td>contextProcessor のエラー。Convex ダッシュボードの Logs で <code class="inline-code">Context processing failed</code> を確認。ANTHROPIC_API_KEY が設定されているか確認</td>
+    </tr>
+    <tr>
+      <td>議事録保存自体が動かない</td>
+      <td>CircleBack デスクトップアプリが起動しているか、Cookie が有効か確認</td>
+    </tr>
+  </table>
+</section>
+
+</div>
+
+<!-- Footer -->
+<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:0.8rem;border-top:1px solid var(--border);">
+  MTG Pipeline Guide &mdash; 2026-02-23 生成
+</div>
+
+</body>
+</html>

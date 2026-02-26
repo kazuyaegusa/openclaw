@@ -1,0 +1,38 @@
+# カタログ変換パイプライン設定
+# skills.json から OpenClaw SKILL.md を生成するための設定
+
+catalog:
+  # スキルカタログの取得元
+  repo: kazuyaegusa/claude_research
+  path: data/export/skills.json
+  cache_dir: /Users/kazuyaegusa/KEWORK/OpenClaw/skill-converter/.cache
+  cache_ttl_hours: 24
+
+filter:
+  # 変換対象のフィルタリング条件
+  categories:
+    - claude-code
+    - mcp-servers
+    - agent
+    - tools
+  min_quality_score: 3.0
+  source_types:
+    - github
+  security_risk_exclude:
+    - dangerous
+    - suspicious
+  max_skills_per_run: 50
+
+output:
+  # 出力先の設定
+  dir: /Users/kazuyaegusa/KEWORK/OpenClaw/OpenClaw-repo/skills
+  log_dir: /Users/kazuyaegusa/KEWORK/OpenClaw/logs
+  template: /Users/kazuyaegusa/KEWORK/OpenClaw/skill-converter/templates/skill.md.j2
+
+git:
+  # Git 操作の設定
+  remote: fork
+  branch: main
+  auto_commit: true
+  auto_push: true
+  repo_dir: /Users/kazuyaegusa/KEWORK/OpenClaw/OpenClaw-repo

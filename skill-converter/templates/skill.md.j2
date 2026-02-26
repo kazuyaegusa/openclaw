@@ -1,0 +1,32 @@
+{#- OpenClaw SKILL.md テンプレート
+     カタログデータから SKILL.md を自動生成する Jinja2 テンプレート
+     description の angle brackets (<>) は除去する -#}
+---
+name: {{ name }}
+description: "{{ description | replace('<', '') | replace('>', '') }}"
+homepage: {{ homepage }}
+metadata:
+  openclaw:
+    emoji: "{{ emoji }}"
+    auto_generated: true
+{%- if bins %}
+    requires:
+      bins: {{ bins }}
+{%- endif %}
+---
+
+# {{ name | title | replace('-', ' ') }}
+
+{{ overview }}
+
+{% if install_section %}
+## Installation
+
+{{ install_section }}
+{% endif %}
+
+{% if usage_section %}
+## Usage
+
+{{ usage_section }}
+{% endif %}
