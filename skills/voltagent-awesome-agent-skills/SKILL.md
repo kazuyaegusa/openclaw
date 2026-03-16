@@ -1,6 +1,6 @@
 ---
 name: voltagent-awesome-agent-skills
-description: "Claude Code Skills and 380+ agent skills from official dev teams and the community, compatible with"
+description: "Claude Code Skills and 500+ agent skills from official dev teams and the community, compatible with"
 homepage: https://github.com/VoltAgent/awesome-agent-skills
 metadata:
   openclaw:

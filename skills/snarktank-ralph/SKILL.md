@@ -7,7 +7,7 @@ metadata:
     emoji: "🔧"
     auto_generated: true
     requires:
-      bins: ["claude-code`)", "git", "jq", "jq`", "npm"]
+      bins: ["claude-code", "git", "jq", "npm"]
 ---
 
 # Snarktank Ralph

@@ -7,7 +7,7 @@ metadata:
     emoji: "🔌"
     auto_generated: true
     requires:
-      bins: ["#", "-y", "```bash", "firecrawl-mcp", "npm", "npx"]
+      bins: ["bash", "firecrawl-mcp", "npm", "npx"]
 ---
 
 # Firecrawl Firecrawl Mcp Server

@@ -7,8 +7,7 @@ metadata:
     emoji: "🔧"
     auto_generated: true
     requires:
-      bins:
-        ["-D", "-y", "add-skill", "docker", "for", "git", "jq", "npm", "npx", "repomix", "repomix`"]
+      bins: ["add-skill", "docker", "for", "git", "jq", "npm", "npx", "repomix"]
 ---
 
 # Yamadashy Repomix

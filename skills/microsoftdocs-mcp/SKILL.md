@@ -6,6 +6,8 @@ metadata:
   openclaw:
     emoji: "🔌"
     auto_generated: true
+    requires:
+      bins: ["jq", "learn-cli", "npm", "npx"]
 ---
 
 # Microsoftdocs Mcp

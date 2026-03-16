@@ -23,5 +23,5 @@ metadata:
 ## Usage
 
 ```bash
-npx github:cexll/myclaude
+npx github:stellarlinkco/myclaude
 ````

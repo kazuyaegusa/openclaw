@@ -7,7 +7,7 @@ metadata:
     emoji: "🔌"
     auto_generated: true
     requires:
-      bins: ["-y", "ctx7", "npx"]
+      bins: ["ctx7", "npx"]
 ---
 
 # Upstash Context7
@@ -21,9 +21,12 @@ metadata:
 > [!NOTE]
 > **API Key Recommended**: Get a free API key at [context7.com/dashboard](https://context7.com/dashboard) for higher rate limits.
 
-<details>
-<summary><b>Install in Cursor</b></summary>
+Set up Context7 for your coding agents with a single command:
 
-Go to: `Settings` -> `Cursor Settings` -> `MCP` -> `Add new global MCP server`
+```bash
+npx ctx7 setup
+```
 
-Pasting the following configuration into your Cursor `~/.cursor/mcp.json` file is the recommended approach. You may also install in a specific project by creating `.cursor/mcp.json` in your project folder. See [Cursor MCP do
+Authenticates via OAuth, generates an API key, and installs the appropriate skill. You can choose between CLI + Skills or MCP mode. Use `--cursor`, `--claude`, or `--opencode` to target a specific agent.
+
+\*\*[Manual Installation / Other Clients →](https://context7.com/

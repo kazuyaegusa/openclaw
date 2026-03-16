@@ -7,7 +7,7 @@ metadata:
     emoji: "🔧"
     auto_generated: true
     requires:
-      bins: ["(e.g.,", "amp", "ccusage", "codex", "git", "mcp", "npx", "opencode", "pi"]
+      bins: ["amp", "ccusage", "codex", "git", "mcp", "npx", "opencode", "pi"]
 ---
 
 # Ryoppippi Ccusage

@@ -7,7 +7,7 @@ metadata:
     emoji: "🤖"
     auto_generated: true
     requires:
-      bins: ["#", "cargo", "npm", "ralph-cli", "ralph-orchestrator"]
+      bins: ["cargo", "npm", "ralph-cli", "ralph-orchestrator"]
 ---
 
 # Mikeyobrien Ralph Orchestrator

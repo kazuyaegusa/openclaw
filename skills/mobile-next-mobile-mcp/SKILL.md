@@ -7,7 +7,7 @@ metadata:
     emoji: "🔧"
     auto_generated: true
     requires:
-      bins: ["-y", "go", "mobile-mcp", "npx"]
+      bins: ["go", "mobile-mcp", "npx"]
 ---
 
 # Mobile Next Mobile Mcp

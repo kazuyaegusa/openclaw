@@ -6,6 +6,8 @@ metadata:
   openclaw:
     emoji: "🔧"
     auto_generated: true
+    requires:
+      bins: ["cli", "npm", "npx"]
 ---
 
 # Kilo Org Kilocode

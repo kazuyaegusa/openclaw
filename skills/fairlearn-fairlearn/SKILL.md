@@ -1,0 +1,28 @@
+---
+name: fairlearn-fairlearn
+description: "A Python package to assess and improve fairness of machine learning models."
+homepage: https://github.com/fairlearn/fairlearn
+metadata:
+  openclaw:
+    emoji: "🧠"
+    auto_generated: true
+    requires:
+      bins: ["fairlearn", "pip"]
+---
+
+# Fairlearn Fairlearn
+
+|MIT license| |PyPI| |Discord| |StackOverflow|
+
+# Fairlearn
+
+Fairlearn is a Python package that empowers developers of artificial
+intelligence (AI) systems to assess their system's fairness and mitigate
+any observed unfairness issues. Fairlearn contains mitigation algorithms
+as well as metrics for model assessment. Besides the source code, this
+repository also contains Jupyter notebooks with examples of Fairlearn
+usage.
+
+Website: https://fairlearn.org/
+
+- `What we mean by _fairness_ <#w

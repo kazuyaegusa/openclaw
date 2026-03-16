@@ -7,7 +7,7 @@ metadata:
     emoji: "🔌"
     auto_generated: true
     requires:
-      bins: ["-qU", "gateway", "npx", "pip"]
+      bins: ["gateway", "npx", "pip"]
 ---
 
 # Portkey Ai Gateway

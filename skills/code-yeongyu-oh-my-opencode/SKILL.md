@@ -13,12 +13,13 @@ metadata:
 # Code Yeongyu Oh My Opencode
 
 > [!WARNING]
-> **Security warning: impersonation site**
+> **TEMP NOTICE (This Week): Reduced Maintainer Availability**
 >
-> **ohmyopencode.com is NOT affiliated with this project.** We do not operate or endorse that site.
+> Core maintainer Q got injured, so issue/PR responses and releases may be delayed this week.
+> Thank you for your patience and support.
+
+> [!NOTE]
 >
-> OhMyOpenCode is **free and open-source**. Do **not** download installers or enter payment details on third-party sites that claim to be "official."
+> [![Sisyphus Labs - Sisyphus is the agent that codes like your team.](./.github/assets/sisyphuslabs.png?v=2)](https://sisyphuslabs.ai)
 >
-> Because the impersonation site is behind a paywall, we **cannot verify what it distributes**. Treat any downloads from it as **potentially unsafe**.
->
-> ✅ Official downloads: https://git
+> > \*\*We're building a fully productized version of Sisyphus to define the future of frontier agents. <br />Join the waitlist [here](htt

@@ -7,8 +7,7 @@ metadata:
     emoji: "🤖"
     auto_generated: true
     requires:
-      bins:
-        ["curl", "git", "go", "node", "npm", "npx", "tweakcc", "tweakcc`", "tweakcc`)", "tweakcc`,"]
+      bins: ["curl", "git", "go", "node", "npm", "npx", "tweakcc"]
 ---
 
 # Piebald Ai Tweakcc

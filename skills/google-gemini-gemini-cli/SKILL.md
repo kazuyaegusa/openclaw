@@ -7,7 +7,7 @@ metadata:
     emoji: "🔌"
     auto_generated: true
     requires:
-      bins: ["(no", "```bash", "gemini-cli", "git", "npm", "npx"]
+      bins: ["bash", "gemini-cli", "git", "no", "npm", "npx"]
 ---
 
 # Google Gemini Gemini Cli
@@ -20,7 +20,7 @@ metadata:
   quickly.
 - [**Authentication Setup**](./docs/get-started/authentication.md) - Detailed
   auth configuration.
-- [**Configuration Guide**](./docs/get-started/configuration.md) - Settings and
+- [**Configuration Guide**](./docs/reference/configuration.md) - Settings and
   customization.
-- [**Keyboard Shortcuts**](./docs/cli/keyboard-shortcuts.md) - Productivity
-  tips.
+- [**Keyboard Shortcuts**](./docs/reference/keyboard-shortcuts.md) -
+  Productivity tips.

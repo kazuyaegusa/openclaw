@@ -7,7 +7,7 @@ metadata:
     emoji: "🔧"
     auto_generated: true
     requires:
-      bins: ["agent-browser", "appium", "git", "npm", "npx", "playwright", "pnpm", "skills"]
+      bins: ["agent-browser", "appium", "cargo", "git", "npm", "npx", "pnpm", "skills"]
 ---
 
 # Vercel Labs Agent Browser
@@ -17,7 +17,7 @@ metadata:
 ## Installation
 
 ```bash
-agent-browser install                 # Download Chromium browser
+agent-browser install                 # Download Chrome from Chrome for Testing (Google's official automation channel)
 agent-browser install --with-deps     # Also install system deps (Linux)
 ```
 
